@@ -18,6 +18,8 @@ fun main() {
         val parser = Parser(tokens)
         val expression = parser.parse()
 
-        println(printAst(expression))
+        var printer = AstPrinter()
+        printer.print(expression)
+        // printAst(expression)
     }
 }

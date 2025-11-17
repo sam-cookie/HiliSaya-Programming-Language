@@ -57,7 +57,7 @@ class Scanner(
 
             val numStart = source.substring(index, index + length)
             if (index + length < source.length && (source[index + length].isLetter() || source[index + length] == '_')) {
-                println("error with starting number '$numStart' in identifier name at line $line")
+                println("[Line $line] Mali ang starting number nga '$numStart' sa identifier")
             }
 
             return TokenType.NUMBER to length
@@ -74,7 +74,7 @@ class Scanner(
                 length++
                 return TokenType.STRING to length
             } else {
-                println("""[Line $line] Error at end: Expect '"' after expression""")
+                println("""[Line $line] Error sa katapusan: Dapat naay '"' sa katapusan bai.""")
                 return null to length
             }
         }
@@ -88,7 +88,7 @@ class Scanner(
                 if (index + length < source.length) {
                     val specialChar = source[index + length]
                     if (!specialChar.isWhitespace() && !specialChar.isLetterOrDigit() && specialChar != '_' && specialChar != '"') {
-                        println("error '$specialChar' at line $line")
+                        println("[Line $line] bawal ang '$specialChar' sa identifiers bai")
                     }
                 }
             }
@@ -127,7 +127,7 @@ class Scanner(
                 line += lexeme.count { it == '\n' }
                 index = endComment
                 if (closing == -1) {
-                    println("[Line $line] Error at end: Expect '*/' after a comment")
+                    println("[Line $line] Error sa katapusan: Dapat naay '*/' para matapos ang comment bai.")
                 }
                 continue
             }
@@ -152,7 +152,7 @@ class Scanner(
             }
 
             if (c != '"') {
-                println("error '$c' at line $line")
+                println("[Line $line] Mali ang '$c' nga character bai.")
             }
 
             index++

@@ -5,18 +5,18 @@ class Parser(private val tokens: List<Token>) {
     private var current = 0
 
     fun parse(): Expr {
-        return expression()
+        return when {
+            check(TokenType.VAR) || check(TokenType.FUNCTION) -> declaration()
+            else -> expression()
+        }
     }
 
     // expression -> logical_or
-    private fun expression(): Expr {
-        return logicalOr()
-    }
+    private fun expression(): Expr = logicalOr()
 
-    // logical_or -> logical_and { "||" logical_and }
     private fun logicalOr(): Expr {
         var expr = logicalAnd()
-        while (match(TokenType.LOGICAL_OR)) {
+        while (match(TokenType.OR)) {
             val operator = previous()
             val right = logicalAnd()
             expr = Expr.Binary(expr, operator, right)
@@ -24,10 +24,9 @@ class Parser(private val tokens: List<Token>) {
         return expr
     }
 
-    // logical_and -> equality { "&&" equality }
     private fun logicalAnd(): Expr {
         var expr = equality()
-        while (match(TokenType.LOGICAL_AND)) {
+        while (match(TokenType.AND)) {
             val operator = previous()
             val right = equality()
             expr = Expr.Binary(expr, operator, right)
@@ -35,7 +34,6 @@ class Parser(private val tokens: List<Token>) {
         return expr
     }
 
-    // equality -> comparison { "==" | "!=" comparison }
     private fun equality(): Expr {
         var expr = comparison()
         while (match(TokenType.EQUALTO, TokenType.NOT_EQUAL)) {
@@ -46,7 +44,6 @@ class Parser(private val tokens: List<Token>) {
         return expr
     }
 
-    // comparison -> term { ">" | ">=" | "<" | "<=" term }
     private fun comparison(): Expr {
         var expr = term()
         while (match(
@@ -60,7 +57,6 @@ class Parser(private val tokens: List<Token>) {
         return expr
     }
 
-    // term -> factor { "+" | "-" factor }
     private fun term(): Expr {
         var expr = factor()
         while (match(TokenType.PLUS, TokenType.MINUS)) {
@@ -71,7 +67,6 @@ class Parser(private val tokens: List<Token>) {
         return expr
     }
 
-    // factor -> unary { "*" | "/" | "%" unary }
     private fun factor(): Expr {
         var expr = unary()
         while (match(TokenType.TIMES, TokenType.DIVIDE, TokenType.MODULO)) {
@@ -82,7 +77,6 @@ class Parser(private val tokens: List<Token>) {
         return expr
     }
 
-    // unary -> "!" | "-" | "+" unary | primary
     private fun unary(): Expr {
         if (match(TokenType.NOT, TokenType.MINUS, TokenType.PLUS)) {
             val operator = previous()
@@ -92,69 +86,75 @@ class Parser(private val tokens: List<Token>) {
         return primary()
     }
 
-    // primary -> NUMBER | STRING | TRUE | FALSE | NULL | IDENTIFIER | "(" expression ")"
     private fun primary(): Expr {
-        if (match(TokenType.NUMBER, TokenType.STRING, TokenType.TRUE, TokenType.FALSE, TokenType.NULL)) {
-            return Expr.Literal(previous().literal)
-        }
+        when {
+            match(TokenType.NUMBER, TokenType.STRING, TokenType.TRUE, TokenType.FALSE, TokenType.NULL) -> {
+                return Expr.Literal(previous().literal)
+            }
 
-        if (match(TokenType.IDENTIFIER)) {
-            return Expr.Literal(previous().lexeme)
-        }
+            match(TokenType.LEFT_PAREN) -> {
+                val expr = expression()
+                if (!match(TokenType.RIGHT_PAREN)) {
+                    reportError(peek(), "Dapat naay ')' sa katapusan bai.")
+                    return Expr.Literal("")
+                }
+                return Expr.Grouping(expr)
+            }
 
-        if (match(TokenType.LEFT_PAREN)) {
-            val expr = expression()
-            consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
-            return Expr.Grouping(expr)
-        }
+            match(TokenType.IDENTIFIER) -> {
+                return Expr.Literal(previous().lexeme)
+            }
 
-        throw error(peek(), "Expect expression.")
+            else -> {
+                reportError(peek(), "Tarungi ang expression bai.")
+                return Expr.Literal("")
+            }
+        }
+    }
+
+    private fun declaration(): Expr {
+        return when {
+            match(TokenType.VAR) -> Expr.Literal(previous().lexeme)
+            match(TokenType.FUNCTION) -> Expr.Literal(previous().lexeme)
+            else -> {
+                reportError(peek(), "Butngi sad ug bar o declaration bai.")
+                return Expr.Literal("")
+            }
+        }
     }
 
     private fun match(vararg types: TokenType): Boolean {
-    for (type in types) {
-        if (check(type)) {
-            advance()
-            return true
+        for (type in types) {
+            if (check(type)) {
+                advance()
+                return true
+            }
         }
-    }
-    return false
-}
-
-    // ensures the next token is of the expected type
-    private fun consume(type: TokenType, message: String) {
-        if (check(type)) {
-            advance()
-            return
-        }
-        throw error(peek(), message)
+        return false
     }
 
-    // returns true if current token matches given type and not at end
     private fun check(type: TokenType): Boolean {
-        return !isAtEnd() && peek().type == type
+        if (isAtEnd()) return false
+        return peek().type == type
     }
 
-    // moves to next token and returns the previous one
     private fun advance(): Token {
         if (!isAtEnd()) current++
         return previous()
     }
 
-    private fun isAtEnd(): Boolean {
-        return peek().type == TokenType.EOF
-    }
+    private fun isAtEnd() = peek().type == TokenType.EOF
+    private fun peek(): Token = tokens[current]
+    private fun previous(): Token = tokens[current - 1]
 
-    private fun peek(): Token {
-        return tokens[current]
-    }
+    private fun reportError(token: Token, message: String) {
 
-    private fun previous(): Token {
-        return tokens[current - 1]
+        // val msg = if (token.type == TokenType.EOF)
+        //     "[line ${token.line}] Error sa katapusan:: $message"
+        // else
+        //     "[line ${token.line}] Error sa '${token.lexeme}': $message"
+        // println(msg)
     }
-
-    private fun error(token: Token, message: String): RuntimeException {
-        return RuntimeException("[line ${token.line}] Error at '${token.lexeme}': $message")
-    }
-
+        
 }
+
