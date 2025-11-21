@@ -165,14 +165,18 @@ class Scanner(
         val (litType, litLen) = scanLiterals(source, index, line)
         if (litType != null) {
             val lexeme = source.substring(index, index + litLen)
-            val literal = when (litType) {
-                TokenType.NUMBER -> lexeme.toDouble()
-                TokenType.STRING -> lexeme.substring(1, lexeme.length - 1)
-                TokenType.TRUE -> "tuod"
-                TokenType.FALSE -> "atik"
-                TokenType.NULL -> "waay"
-                else -> null
-            }
+           val literal = when (litType) {
+            TokenType.NUMBER ->
+                if (lexeme.contains(".")) lexeme.toDouble()
+                else lexeme.toInt()
+
+            TokenType.STRING -> lexeme.substring(1, lexeme.length - 1)
+            TokenType.TRUE -> true
+            TokenType.FALSE -> false
+            TokenType.NULL -> null
+            else -> null
+        }
+
             tokens.add(Token(litType, lexeme, literal, line))
             return true
         }

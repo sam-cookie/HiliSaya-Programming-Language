@@ -44,24 +44,36 @@ class Parser(private val tokens: List<Token>) {
         return expr
     }
 
-    private fun comparison(): Expr {
-        var expr = term()
+   private fun comparison(): Expr {
+        var expr = stringConcat() 
         while (match(
                 TokenType.GREATER_THAN, TokenType.GREATER_THAN_EQUAL,
                 TokenType.LESS_THAN, TokenType.LESS_THAN_EQUAL
             )) {
             val operator = previous()
-            val right = term()
+            val right = stringConcat()
             expr = Expr.Binary(expr, operator, right)
         }
         return expr
     }
+
 
     private fun term(): Expr {
         var expr = factor()
         while (match(TokenType.PLUS, TokenType.MINUS)) {
             val operator = previous()
             val right = factor()
+            expr = Expr.Binary(expr, operator, right)
+        }
+        return expr
+    }
+
+    // handling concatenation with SUMPAY token
+    private fun stringConcat(): Expr {
+        var expr = term()
+        while (match(TokenType.SUMPAY)) {
+            val operator = previous()
+            val right = term()
             expr = Expr.Binary(expr, operator, right)
         }
         return expr

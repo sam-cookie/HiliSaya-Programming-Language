@@ -7,8 +7,11 @@ import scanner.*
 // printing should not be inside the main function
 fun main() {
     val evaluator = Evaluator()
+    val printer = EvaluatorPrinter()
+
     print("Hilisaya Programming Language")
-    print("Type 'humana' to exit.\n") 
+    print("Type 'humana' to exit.\n")
+
     while (true) {
         print("> ")
         val line = readLine() ?: break
@@ -22,7 +25,6 @@ fun main() {
         val expression = parser.parse()
 
         val result = evaluator.evaluate(expression)
-
-        if (result != null) println(result)
+        printer.printResult(result)
     }
 }

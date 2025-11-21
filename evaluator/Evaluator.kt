@@ -4,26 +4,26 @@ import scanner.*
 
 class Evaluator {
     fun evaluate(expr: Expr?): Any? {
-    if (expr == null) return null
-    val result = when (expr) {
-        is Expr.Literal -> expr.value
-        is Expr.Grouping -> evaluate(expr.expression)
-        is Expr.Unary -> evaluateUnary(expr)
-        is Expr.Binary -> evaluateBinary(expr)
-    }
+        if (expr == null) return null
+        val result = when (expr) {
+            is Expr.Literal -> expr.value
+            is Expr.Grouping -> evaluate(expr.expression)
+            is Expr.Unary -> evaluateUnary(expr)
+            is Expr.Binary -> evaluateBinary(expr)
+        }
 
-    return when (result) {
-        true -> "tuod"
-        false -> "atik"
-        else -> result
+        return when (result) {
+            true -> "tuod"
+            false -> "atik"
+            else -> result
+        }
     }
-}
 
     private fun evaluateUnary(expr: Expr.Unary): Any? {
         val right = evaluate(expr.right)
         return when (expr.operator.type) {
             TokenType.MINUS -> {
-                if (right is Double) return -right
+                if (right is Number) return -right.toDouble()
                 runtimeError(expr.operator, "Number dapat ang operand sa unary '-'.")
                 null
             }
@@ -38,44 +38,68 @@ class Evaluator {
 
         return when (expr.operator.type) {
             TokenType.PLUS -> {
-                when {
-                    left is Double && right is Double -> left + right
-                    left is String && right is String -> left + right
-                    else -> {
-                        runtimeError(expr.operator, "Ang duwa kay dapat pareho nga type: duha ka numero o duha ka string.")
-                        null
-                    }
+            if (left is Number && right is Number)
+                left.toDouble() + right.toDouble()
+            else {
+                runtimeError(expr.operator, "Ang '+' kay para lang sa numbers bai.")
+                null
                 }
             }
+
             TokenType.MINUS -> {
-                if (left is Double && right is Double) left - right else {
+                if (left is Number && right is Number)
+                    left.toDouble() - right.toDouble()
+                else {
                     runtimeError(expr.operator, "Di ni pwede bai! Number dapat ang operand")
                     null
                 }
             }
+
             TokenType.TIMES -> {
-                if (left is Double && right is Double) left * right else {
+                if (left is Number && right is Number)
+                    left.toDouble() * right.toDouble()
+                else {
                     runtimeError(expr.operator, "Di ni pwede bai! Number dapat ang operand")
                     null
                 }
             }
+
             TokenType.DIVIDE -> {
-                if (left is Double && right is Double) {
-                    if (right == 0.0) {
+                if (left is Number && right is Number) {
+                    if (right.toDouble() == 0.0) {
                         runtimeError(expr.operator, "Tadlong bala. Bawal magdivide by 0 bai.")
                         null
-                    } else left / right
+                    } else left.toDouble() / right.toDouble()
                 } else {
                     runtimeError(expr.operator, "Di ni pwede bai! Number dapat ang operand")
                     null
                 }
             }
-            TokenType.GREATER_THAN -> compareNumbers(expr.operator, left, right) { l, r -> l > r }
-            TokenType.GREATER_THAN_EQUAL -> compareNumbers(expr.operator, left, right) { l, r -> l >= r }
-            TokenType.LESS_THAN -> compareNumbers(expr.operator, left, right) { l, r -> l < r }
-            TokenType.LESS_THAN_EQUAL -> compareNumbers(expr.operator, left, right) { l, r -> l <= r }
+
+            TokenType.SUMPAY -> {
+                if (left is String && right is String) 
+                    left + right
+                else {
+                    runtimeError(expr.operator, "Ang 'sumpay' kay para lang sa strings.")
+                    null
+                }
+            }
+
+            TokenType.GREATER_THAN ->
+                compareNumbers(expr.operator, left, right) { l, r -> l > r }
+
+            TokenType.GREATER_THAN_EQUAL ->
+                compareNumbers(expr.operator, left, right) { l, r -> l >= r }
+
+            TokenType.LESS_THAN ->
+                compareNumbers(expr.operator, left, right) { l, r -> l < r }
+
+            TokenType.LESS_THAN_EQUAL ->
+                compareNumbers(expr.operator, left, right) { l, r -> l <= r }
+
             TokenType.EQUALTO -> isEqual(left, right)
             TokenType.NOT_EQUAL -> !isEqual(left, right)
+
             else -> null
         }
     }
@@ -86,7 +110,9 @@ class Evaluator {
         right: Any?,
         comparison: (Double, Double) -> Boolean
     ): Boolean? {
-        return if (left is Double && right is Double) comparison(left, right) else {
+        return if (left is Number && right is Number)
+            comparison(left.toDouble(), right.toDouble())
+        else {
             runtimeError(operator, "Di ni pwede bai! Number dapat ang operand")
             null
         }
