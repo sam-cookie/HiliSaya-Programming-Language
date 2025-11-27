@@ -1,12 +1,11 @@
 package parser
 import scanner.*
+import errorhandling.ParseError
 
 class Parser(private val tokens: List<Token>) {
     private var current = 0
-    private var hadError = false
 
     fun parseProgram(): Stmt.Program {
-        hadError = false
         val statements = parseStatements()
         return Stmt.Program(statements)
     }
@@ -14,78 +13,70 @@ class Parser(private val tokens: List<Token>) {
     private fun parseStatements(): List<Stmt> {
         val statements = mutableListOf<Stmt>()
         while (!isAtEnd()) {
-            val stmt = statement()
-            if (!hadError) statements.add(stmt)
-            else synchronize()
+            statements.add(statement())  // let ParseError propagate
         }
         return statements
     }
 
-    
     private fun statement(): Stmt = when {
         match(TokenType.PRINT) -> printStatement()
         match(TokenType.VAR) -> varDeclaration()
-        match(TokenType.SUGOD) -> blockStatement() 
+        match(TokenType.SUGOD) -> blockStatement()
         else -> expressionStatement()
     }
 
     private fun blockStatement(): Stmt.Block {
         val stmts = parseBlockStatements()
-        if (!hadError) {
-            if (consume(TokenType.TAPOS, "Dapat naay 'tapos' para matapos ang block bai.") == null) {
-               return Stmt.Block(emptyList())
-            }
-            if (consume(TokenType.PERIOD, "Dapat naay period (.) sa katapusan sa block bai") == null) {
-               return Stmt.Block(emptyList())
-            }
-        }
+        consume(TokenType.TAPOS, "Dapat naay 'tapos' para matapos ang block bai.")
+        consume(TokenType.PERIOD, "Dapat naay period (.) sa katapusan sa block bai")
         return Stmt.Block(stmts)
     }
 
     private fun parseBlockStatements(): List<Stmt> {
         val statements = mutableListOf<Stmt>()
         while (!check(TokenType.TAPOS) && !isAtEnd()) {
-            val stmt = statement()
-            if (!hadError) statements.add(stmt)
-            else synchronize()
+            statements.add(statement())
         }
         return statements
     }
 
-
     private fun printStatement(): Stmt {
         val expr = expression()
-        if (!hadError) {
-            if (consume(TokenType.PERIOD, "Dapat naay period (.) sa katapusan bai") == null) {
-                return Stmt.Print(Expr.Literal(null))
-            }
+        if (check(TokenType.RIGHT_PAREN)) {
+            throw ParseError("Dili balanced ang parentheses bai.", peek().line)
         }
+        consume(TokenType.PERIOD, "Dapat naay period (.) sa katapusan bai")
         return Stmt.Print(expr)
     }
 
+
     private fun varDeclaration(): Stmt {
         val name = consume(TokenType.IDENTIFIER, "Dapat naay variable name")
-        if (hadError || name == null) {
-            return Stmt.Var(Token(TokenType.IDENTIFIER, "ERROR", null, 0), null)
-        }
-        
         val initializer = if (match(TokenType.EQUALS)) expression() else null
-        
-        if (!hadError) {
-            if (consume(TokenType.PERIOD, "Dapat naay period (.) sa katapusan sa var declaration bai") == null) {
-                return Stmt.Var(name, initializer)
-            }
-        }
+        consume(TokenType.PERIOD, "Dapat naay period (.) sa katapusan sa var declaration bai")
         return Stmt.Var(name, initializer)
     }
 
     private fun expressionStatement(): Stmt {
         val expr = expression()
-        if (!hadError) {
-            if (consume(TokenType.PERIOD, "Dapat naay period (.) sa katapusan sa expression bai") == null) {
-                return Stmt.ExprStmt(expr)
-            }
+
+        if (check(TokenType.RIGHT_PAREN)) {
+            throw ParseError("Dili balanced ang parentheses bai.", peek().line)
         }
+
+        // var openParens = 0
+        // for (i in current until tokens.size) {
+        //     when (tokens[i].type) {
+        //         TokenType.LEFT_PAREN -> openParens++
+        //         TokenType.RIGHT_PAREN -> openParens--
+        //         else -> {}
+        //     }
+        //     if (openParens < 0) {
+        //         throw ParseError("Dili balanced ang parentheses bai.", tokens[i].line)
+        //     }
+        // }
+
+        consume(TokenType.PERIOD, "Dapat naay period (.) sa katapusan sa expression bai")
         return Stmt.ExprStmt(expr)
     }
 
@@ -93,18 +84,12 @@ class Parser(private val tokens: List<Token>) {
 
     private fun assignment(): Expr {
         val expr = equality()
-        
         if (match(TokenType.EQUALS)) {
             val equals = previous()
             val value = assignment()
-            
-            if (expr is Expr.Variable) {
-                return Expr.Assign(expr.name, value)  
-            }
-            
-            reportError(equals, "Invalid assignment target bai.")
+            if (expr is Expr.Variable) return Expr.Assign(expr.name, value)
+            throw ParseError("Invalid assignment target bai.", equals.line)
         }
-        
         return expr
     }
 
@@ -175,12 +160,8 @@ class Parser(private val tokens: List<Token>) {
 
         if (match(TokenType.LEFT_PAREN)) {
             val expr = expression()
-            if (!check(TokenType.RIGHT_PAREN)) {
-                reportError(peek(), "Wa nay ')' sa katapusan bai. Naay sobra nga '('.")
-                return Expr.Literal("ERROR") 
-            }
-            if (consume(TokenType.RIGHT_PAREN, "Dapat naay ')' sa katapusan bai.") == null) {
-                return Expr.Literal("ERROR")
+            if (!match(TokenType.RIGHT_PAREN)) {
+                throw ParseError("Dili balanced ang parentheses bai.", peek().line)
             }
             return Expr.Grouping(expr)
         }
@@ -189,11 +170,10 @@ class Parser(private val tokens: List<Token>) {
             return Expr.Variable(previous())
         }
 
-        reportError(peek(), "Tarungi ang expression bai.")
-        return Expr.Literal("ERROR") 
+        throw ParseError("Tarungi ang expression bai.", peek().line)
     }
 
-    // helpers 
+    // helpers
     private fun match(vararg types: TokenType): Boolean {
         for (type in types) {
             if (check(type)) {
@@ -204,37 +184,25 @@ class Parser(private val tokens: List<Token>) {
         return false
     }
 
-    private fun check(type: TokenType): Boolean = !isAtEnd() && peek().type == type
-
+    private fun check(type: TokenType) = !isAtEnd() && peek().type == type
     private fun advance(): Token {
         if (!isAtEnd()) current++
         return previous()
     }
 
     private fun isAtEnd() = peek().type == TokenType.EOF
-    private fun peek(): Token = tokens[current]
-    private fun previous(): Token = tokens[current - 1]
-    private fun peekNext(): Token? = if (current + 1 < tokens.size) tokens[current + 1] else null
+    private fun peek() = tokens[current]
+    private fun previous() = tokens[current - 1]
 
-    private fun consume(type: TokenType, message: String): Token? {
-        if (check(type)) {
-            return advance()
-        }
-        reportError(peek(), message)
-        return null
-    }
-
-    private fun reportError(token: Token, message: String) {
-        println("[Line ${token.line}] Error sa '${token.lexeme}': $message")
-        hadError = true
+    private fun consume(type: TokenType, message: String): Token {
+        if (check(type)) return advance()
+        throw ParseError(message, peek().line)
     }
 
     private fun synchronize() {
-        advance() 
-        
+        advance()
         while (!isAtEnd()) {
-            if (previous().type == TokenType.PERIOD) return // end of statement
-            
+            if (previous().type == TokenType.PERIOD) return
             when (peek().type) {
                 TokenType.PRINT, TokenType.VAR, TokenType.SUGOD -> return
                 else -> advance()

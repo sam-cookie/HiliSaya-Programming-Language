@@ -1,11 +1,13 @@
 package scanner
 
+import errorhandling.HiliSayaError
+import errorhandling.ScanError
+
 class Scanner(
     private val source: String,
     private var index: Int = 0,
     private var line: Int = 1
 ) {
-
     private val tokens = mutableListOf<Token>()
 
     fun scanToken(source: String, index: Int): Pair<TokenType?, Int> {
@@ -51,9 +53,8 @@ class Scanner(
             }
 
             val numStart = source.substring(index, index + length)
-            // FIXED: Only check for identifier characters immediately after number
             if (index + length < source.length && (source[index + length].isLetter() || source[index + length] == '_')) {
-                println("[Line $line] Mali ang starting number nga '$numStart' sa identifier")
+               throw ScanError("Mali ang starting number nga '$numStart' sa identifier", line)
             }
 
             return TokenType.NUMBER to length
@@ -67,8 +68,7 @@ class Scanner(
                 length++
                 return TokenType.STRING to length
             } else {
-                println("[Line $line] Error sa katapusan: Dapat naay '\"' sa katapusan bai.")
-                return null to length
+                throw ScanError("Dapat naay closing '\"' sa katapusan sa string", line)
             }
         }
 
@@ -95,64 +95,61 @@ class Scanner(
         while (index < source.length) {
             val c = source[index]
 
-            // Handle Windows line endings: \r\n
+            // handle line endings
             if (c == '\r' && index + 1 < source.length && source[index + 1] == '\n') {
-                // Skip the \r and process the \n on next iteration
                 index++
                 continue
             }
 
-            // Skip whitespace (including newlines since we're using periods)
-            if (c == ' ' || c == '\r' || c == '\t' || c == '\n') {
+            // skip whitespace
+            if (c.isWhitespace()) {
                 index++
                 continue
             }
 
-            // PERIOD as statement terminator
+            // period terminator
             if (c == '.') {
                 tokens.add(Token(TokenType.PERIOD, ".", null, line))
                 index++
                 continue
             }
 
-            // Block comments
+            // block comments
             if (index + 2 < source.length && source.substring(index, index + 2) == "/*") {
                 val closing = source.indexOf("*/", index + 2)
                 val endComment = if (closing != -1) closing + 2 else source.length
                 val lexeme = source.substring(index, endComment)
                 line += lexeme.count { it == '\n' }
                 index = endComment
-                if (closing == -1) println("[Line $line] Error sa katapusan: Dapat naay '*/' para matapos ang comment bai.")
+                if (closing == -1) throw ScanError("Dapat naay '*/' para matapos ang comment", line)
                 continue
             }
 
-            // Line comments
+            // line comments
             if (index + 1 < source.length && source.substring(index, index + 2) == "//") {
                 val closing = source.indexOf("\n", index + 2)
                 index = if (closing != -1) closing else source.length
                 continue
             }
 
-            // Literals (numbers, strings, identifiers, keywords)
+            // literals
             if (isLiteral(source, index, line, tokens)) {
                 val (_, litLen) = scanLiterals(source, index, line)
                 index += litLen
                 continue
             }
 
-            // Symbols (operators, punctuation)
+            // symbols
             if (isSymbol(source, index, line, tokens)) {
                 val (_, symLen) = scanToken(source, index)
                 index += symLen
                 continue
             }
 
-            // Unknown character
-            println("[Line $line] Mali ang '$c' nga character bai.")
-            index++
+            // unknown character
+            throw ScanError("Mali ang '$c' nga character", line)
         }
 
-        // End of file
         tokens.add(Token(TokenType.EOF, "", null, line))
     }
 

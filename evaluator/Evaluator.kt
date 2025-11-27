@@ -1,8 +1,10 @@
 package evaluator
+
 import parser.*
 import scanner.*
+import errorhandling.RuntimeError
 
-class Evaluator(private val isReplMode: Boolean = false) {
+class Evaluator {
     private var environment: Environment = Environment()
 
     fun executeProgram(program: Stmt.Program) {
@@ -12,32 +14,31 @@ class Evaluator(private val isReplMode: Boolean = false) {
     fun execute(stmt: Stmt) {
         when (stmt) {
             is Stmt.Var -> {
-                val value = stmt.initializer?.let { evaluate(it) } ?: "waay"
+                val value = stmt.initializer?.let { evaluate(it) } ?: null
                 environment.define(stmt.name.lexeme, value)
             }
 
             is Stmt.Assign -> {
                 val value = evaluate(stmt.value)
-                environment.assign(stmt.name.lexeme, value)
+                environment.assign(stmt.name.lexeme, value, stmt.name.line)
             }
 
             is Stmt.Print -> {
                 val value = evaluate(stmt.expression)
-                if (value != null) println(valueToString(value))
+                println(valueToString(value))
             }
 
             is Stmt.ExprStmt -> {
-                val result = evaluate(stmt.expression)
-                if (isReplMode && result != null) println(valueToString(result))
+                evaluate(stmt.expression)
             }
 
             is Stmt.Block -> executeBlock(stmt.statements, Environment(environment))
-
+            
             is Stmt.Program -> executeProgram(stmt)
         }
     }
 
-    fun executeBlock(statements: List<Stmt>, blockEnv: Environment) {
+    private fun executeBlock(statements: List<Stmt>, blockEnv: Environment) {
         val previous = environment
         environment = blockEnv
         try {
@@ -50,41 +51,26 @@ class Evaluator(private val isReplMode: Boolean = false) {
     fun evaluate(expr: Expr?): Any? {
         if (expr == null) return null
 
-        val result = when (expr) {
-            is Expr.Literal -> {
-                if (expr.value == "ERROR") return null
-                expr.value
-            }
+        return when (expr) {
+            is Expr.Literal -> expr.value
             is Expr.Grouping -> evaluate(expr.expression)
             is Expr.Unary -> evaluateUnary(expr)
             is Expr.Binary -> evaluateBinary(expr)
-            is Expr.Variable -> environment.get(expr.name.lexeme)
+            is Expr.Variable -> environment.get(expr.name.lexeme, expr.name.line)
             is Expr.Assign -> {
                 val value = evaluate(expr.value)
-                if (value != null) environment.assign(expr.name.lexeme, value)
-                else null
+                environment.assign(expr.name.lexeme, value, expr.name.line)
+                value
             }
         }
-
-        return when (result) {
-            true -> "tuod"
-            false -> "atik"
-            null -> if (isLegitimateNull(expr)) "waay" else null
-            else -> result
-        }
     }
 
-    private fun isLegitimateNull(expr: Expr): Boolean {
-        return expr is Expr.Literal && expr.value == null
-    }
 
     private fun evaluateUnary(expr: Expr.Unary): Any? {
-        val right = evaluate(expr.right) ?: return null
+        val right = evaluate(expr.right)
         return when (expr.operator.type) {
-            TokenType.MINUS -> if (right is Number) -right.toDouble() else {
-                runtimeError(expr.operator, "Number dapat ang operand sa unary '-' bai.")
-                null
-            }
+            TokenType.MINUS -> if (right is Number) -right.toDouble() else
+                throw RuntimeError("Number dapat ang operand sa unary '-' bai.", expr.operator.line)
             TokenType.NOT -> !isTruthy(right)
             else -> null
         }
@@ -93,79 +79,50 @@ class Evaluator(private val isReplMode: Boolean = false) {
     private fun evaluateBinary(expr: Expr.Binary): Any? {
         val left = evaluate(expr.left)
         val right = evaluate(expr.right)
-        if (left == null || right == null) return null
 
         return when (expr.operator.type) {
-            TokenType.PLUS -> {
-                if (left is Number && right is Number) left.toDouble() + right.toDouble()
-                else if (left is String || right is String) valueToString(left) + valueToString(right)
-                else {
-                    runtimeError(expr.operator, "Ang '+' kay para lang if number+number or kung pwede string conversion.")
-                    null
-                }
+            TokenType.PLUS -> if (left is Number && right is Number) left.toDouble() + right.toDouble()
+                              else valueToString(left) + valueToString(right)
+            TokenType.MINUS -> checkNumbers(left, right, expr.operator) { a, b -> a - b }
+            TokenType.TIMES -> checkNumbers(left, right, expr.operator) { a, b -> a * b }
+            TokenType.DIVIDE -> checkNumbers(left, right, expr.operator) { a, b ->
+                if (b == 0.0) throw RuntimeError("Bawal magdivide by 0 bai.", expr.operator.line)
+                a / b
             }
-            TokenType.MINUS -> if (left is Number && right is Number) left.toDouble() - right.toDouble() else {
-                runtimeError(expr.operator, "Di ni pwede bai! Number dapat ang operand")
-                null
+            TokenType.MODULO -> checkNumbers(left, right, expr.operator) { a, b ->
+                if (b == 0.0) throw RuntimeError("Bawal mag modulo by 0 bai.", expr.operator.line)
+                a % b
             }
-            TokenType.TIMES -> if (left is Number && right is Number) left.toDouble() * right.toDouble() else {
-                runtimeError(expr.operator, "Di ni pwede bai! Number dapat ang operand")
-                null
-            }
-            TokenType.DIVIDE -> if (left is Number && right is Number) {
-                if (right.toDouble() == 0.0) {
-                    runtimeError(expr.operator, "Bawal magdivide by 0 bai.")
-                    null
-                } else left.toDouble() / right.toDouble()
-            } else {
-                runtimeError(expr.operator, "Di ni pwede bai! Number dapat ang operand")
-                null
-            }
-            TokenType.SUMPAY -> if (left is String && right is String) left + right else {
-                runtimeError(expr.operator, "Ang 'sumpay' kay para lang sa strings bai.")
-                null
-            }
-            TokenType.MODULO -> if (left is Number && right is Number) {
-                if (right.toDouble() == 0.0) {
-                    runtimeError(expr.operator, "Bawal mag modulo by 0 bai.")
-                    null
-                } else left.toDouble() % right.toDouble()
-            } else {
-                runtimeError(expr.operator, "Number dapat ang operand sa modulo")
-                null
-            }
-            TokenType.GREATER_THAN -> compareNumbers(expr.operator, left, right) { a, b -> a > b }
-            TokenType.GREATER_THAN_EQUAL -> compareNumbers(expr.operator, left, right) { a, b -> a >= b }
-            TokenType.LESS_THAN -> compareNumbers(expr.operator, left, right) { a, b -> a < b }
-            TokenType.LESS_THAN_EQUAL -> compareNumbers(expr.operator, left, right) { a, b -> a <= b }
+            TokenType.SUMPAY -> valueToString(left) + valueToString(right)
+            TokenType.GREATER_THAN -> compareNumbers(left, right, expr.operator) { a, b -> a > b }
+            TokenType.GREATER_THAN_EQUAL -> compareNumbers(left, right, expr.operator) { a, b -> a >= b }
+            TokenType.LESS_THAN -> compareNumbers(left, right, expr.operator) { a, b -> a < b }
+            TokenType.LESS_THAN_EQUAL -> compareNumbers(left, right, expr.operator) { a, b -> a <= b }
             TokenType.EQUALTO -> isEqual(left, right)
             TokenType.NOT_EQUAL -> !isEqual(left, right)
             else -> null
         }
     }
 
-    private fun compareNumbers(operator: Token, left: Any?, right: Any?, comparison: (Double, Double) -> Boolean): Boolean? {
-        return if (left is Number && right is Number) comparison(left.toDouble(), right.toDouble())
-        else {
-            runtimeError(operator, "Di ni pwede bai! Number dapat ang operand")
-            null
-        }
+    private fun checkNumbers(left: Any?, right: Any?, operator: Token, op: (Double, Double) -> Double): Any? {
+        if (left is Number && right is Number) return op(left.toDouble(), right.toDouble())
+        throw RuntimeError("Number dapat ang operand bai.", operator.line)
+    }
+
+    private fun compareNumbers(left: Any?, right: Any?, operator: Token, comp: (Double, Double) -> Boolean): Boolean {
+        if (left is Number && right is Number) return comp(left.toDouble(), right.toDouble())
+        throw RuntimeError("Number dapat ang operand bai.", operator.line)
     }
 
     private fun isTruthy(value: Any?): Boolean {
         return when (value) {
             null -> false
             is Boolean -> value
-            "waay" -> false
-            "tuod" -> true
-            "atik" -> false
             else -> true
         }
     }
 
     private fun isEqual(a: Any?, b: Any?): Boolean {
-        if (a == null && b == null) return true
-        if (a == null) return false
         return a == b
     }
 
@@ -177,9 +134,5 @@ class Evaluator(private val isReplMode: Boolean = false) {
             is Double -> if (value % 1 == 0.0) value.toInt().toString() else value.toString()
             else -> value.toString()
         }
-    }
-
-    private fun runtimeError(token: Token, message: String) {
-        println("[line ${token.line}] Runtime Error: $message")
     }
 }

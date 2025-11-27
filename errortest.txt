@@ -1,0 +1,102 @@
+// ---------------------- BASIC PRINTS ----------------------
+gawas "hello world".                 // hello world
+gawas 5 + 3.                         // 8
+gawas "hi" SUMPAY "yo".              // hiyo
+gawas "hi" + 5.                       // hi5
+gawas 10 - 4.                         // 6
+gawas 3 * 2.                          // 6
+gawas 10 / 2.                         // 5
+gawas 10 % 3.                         // 1
+
+// ---------------------- VARIABLES ----------------------
+bar x = 10.
+gawas x.                             // 10
+x = x + 5.
+gawas x.                             // 15
+bar y = x + 5.
+gawas y.                             // 20
+
+// ---------------------- UNDEFINED VARIABLES ----------------------
+gawas z.                              // Runtime Error: Wa ma-define nga variable 'z' bai.
+a = 5.                                 // Runtime Error: Wa manay variable 'a' bai.
+
+// ---------------------- INVALID ASSIGNMENTS ----------------------
+12 = x.                               // Parse Error: Invalid assignment target bai.
+("hi" + "yo") = y.                    // Parse Error: Invalid assignment target bai.
+
+// ---------------------- MISSING PERIODS ----------------------
+gawas 5 + 5                            // Parse Error: Dapat naay period (.) sa katapusan bai
+bar x = 10                             // Parse Error: Dapat naay period (.) sa katapusan bai
+
+// ---------------------- UNBALANCED PARENTHESES ----------------------
+gawas (1 + 2.                         // Parse Error: Dili balanced ang parentheses bai
+gawas 3 + 2)).                        // Parse Error: Dili balanced ang parentheses bai
+gawas ((1+2)*(3-4)/2.                  // Parse Error: Dili balanced ang parentheses bai
+gawas (((1+2)*3)-4)/2).               // 2.5
+
+// ---------------------- EMPTY EXPRESSIONS ----------------------
+gawas ().                              // Parse Error: Tarungi ang expression bai.
+bar y = ().                            // Parse Error: Tarungi ang expression bai.
+
+// ---------------------- TYPE ERRORS ----------------------
+x = "hi".
+gawas x - 5.                           // Runtime Error: Number dapat ang operand bai.
+gawas 5 + "hello".                     // hi5
+gawas "hello" * 2.                     // Runtime Error: Number dapat ang operand bai.
+gawas 10 / "hi".                       // Runtime Error: Number dapat ang operand bai.
+gawas "hi" > 5.                        // Runtime Error: Number dapat ang operand bai.
+
+// ---------------------- DIVIDE / MODULO BY ZERO ----------------------
+gawas 5 / 0.                           // Runtime Error: Bawal magdivide by 0 bai.
+gawas 5 % 0.                           // Runtime Error: Bawal mag modulo by 0 bai.
+
+// ---------------------- BOOLEAN / UNARY ----------------------
+bar t = tuod.
+bar f = atik.
+gawas !t.                              // atik
+gawas !f.                              // tuod
+gawas -5.                              // -5
+gawas -"hi".                            // Runtime Error: Number dapat ang operand sa unary '-' bai.
+
+// ---------------------- COMPARISONS ----------------------
+gawas 5 > 3.                           // true
+gawas 2 < 1.                           // false
+gawas 5 >= 5.                          // true
+gawas 4 <= 2.                          // false
+gawas 3 == 3.                          // true
+gawas 3 != 4.                          // true
+gawas "hi" == "hi".                    // true
+gawas "hi" != "yo".                    // true
+
+// ---------------------- BLOCKS AND SCOPE ----------------------
+bar x = 5.
+sugod
+    bar x = 10.
+    gawas x.                           // 10
+tapos
+gawas x.                               // 5
+
+sugod
+    bar y = 7.
+    gawas y.                           // 7
+tapos
+gawas y.                               // Runtime Error: Wa ma-define nga variable 'y' bai.
+
+// ---------------------- COMPLEX EXPRESSIONS ----------------------
+gawas ((1+2)*(3-4)/2).                 // -1.5
+gawas (((1+2)*3)-4)/2.                 // 2.5
+bar a = ((5+5)*2)/3.
+gawas a.                               // 6.666666666666667
+bar b = "hi" SUMPAY ("yo" + 5).
+gawas b.                               // hiyo5
+
+// ---------------------- COMMENTS ----------------------
+// this is a comment
+// another comment
+gawas "done".                          // done
+
+// ---------------------- EXTRA TESTS ----------------------
+bar z = 0.
+gawas z + 10.                          // 10
+gawas (z + 2) * (z + 3).               // 6
+gawas ((z + 1)*(z + 2)*(z + 3)).       // 6
