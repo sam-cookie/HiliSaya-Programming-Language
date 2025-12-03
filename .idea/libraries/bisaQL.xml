@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="bisaQL">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/parser.jar!/" />
+      <root url="jar://$PROJECT_DIR$/evaluator.jar!/" />
+      <root url="jar://$PROJECT_DIR$/HiliSaya.jar!/" />
+      <root url="jar://$PROJECT_DIR$/main.jar!/" />
+      <root url="jar://$PROJECT_DIR$/BisaQL.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

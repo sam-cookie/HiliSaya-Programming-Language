@@ -9,7 +9,7 @@ val keywords = mapOf(
     "nga" to TokenType.NGA,
 
     // re assignment
-    "Usbi" to TokenType.USBA,
+    "Usbi" to TokenType.USBI,
     "ang" to TokenType.ANG,
     "himuag" to TokenType.HIMUAG,
 
@@ -34,8 +34,8 @@ val keywords = mapOf(
     "atik" to TokenType.FALSE,
     "wala" to TokenType.NULL,
     "sumpayig" to TokenType.SUMPAY,
-    "sugod" to TokenType.SUGOD,
-    "tapos" to TokenType.TAPOS,
+    "Sugod" to TokenType.SUGOD,
+    "Tapos" to TokenType.TAPOS,
 
     //arithmetic
     "plusig" to TokenType.PLUS,

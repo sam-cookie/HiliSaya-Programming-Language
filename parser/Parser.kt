@@ -18,9 +18,12 @@ class Parser(private val tokens: List<Token>) {
         return when {
             // Note: Make sure checkSequence uses TokenType.VAR if you removed UG from here
             checkSequence(TokenType.PAGHIMO, TokenType.VAR) -> varDeclaration()
-            check(TokenType.USBA) -> assignmentStatement()
+            check(TokenType.USBI) -> assignmentStatement()
             check(TokenType.PRINT) -> printStatement()
             check(TokenType.SUGOD) -> blockStatement()
+            check(TokenType.SAMTANG) -> whileStatement()
+            check(TokenType.IF) -> ifStatement()
+            check(TokenType.ELSE) -> elseStatement()
             else -> expressionStatement()
         }
     }
@@ -37,7 +40,7 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun assignmentStatement(): Stmt {
-        consume(TokenType.USBA, "Dapat magsugod sa 'usba'")
+        consume(TokenType.USBI, "Dapat magsugod sa 'usbi'")
         consume(TokenType.ANG, "Dapat naay 'ang'")
         val name = consume(TokenType.IDENTIFIER, "Dapat naay variable name")
 
@@ -78,18 +81,56 @@ class Parser(private val tokens: List<Token>) {
         consume(TokenType.PRINT, "Dapat magsugod sa 'ipakita'")
         consume(TokenType.ANG, "Dapat naay 'ang'")
         val expr = expression()
-        consume(TokenType.PERIOD, "Dapat naay sa katapusan")
+        consume(TokenType.PERIOD, "Dapat naay (.) sa katapusan")
         return Stmt.Print(expr)
     }
 
-    // private fun whileStatement(): Stmt {
-    //     consume(TokenType.SAMTANG, "Dapat magsugod sa 'samtang'")
-    //     consume(TokenType.ANG, "Dapat naay 'ang' before ang condition")
-    //     val condition = expression()
-    //     consume(TokenType.BUHATA, "Dapat naay 'buhata' after sa condition")
-    //     val body = statement()
-    //     return Stmt.While(condition, body)
-    // }
+    private fun whileStatement(): Stmt {
+        consume(TokenType.SAMTANG, "Dapat magsugod sa 'samtang'")
+        consume(TokenType.ANG, "Dapat naay 'ang' before ang condition")
+        val condition = expression()
+        consume(TokenType.BUHATA, "Dapat naay 'buhata' after condition")
+        consume(TokenType.COMMA, "Dapat naay comma human sa 'buhata'")
+        val stmts = mutableListOf<Stmt>()
+        while (!check(TokenType.TAPOS) && !isAtEnd()) {
+            stmts.add(statement())
+        }
+        consume(TokenType.TAPOS, "Dapat naay 'tapos' para sa while block")
+        consume(TokenType.PERIOD, "Dapat 'tapos.' ang ending")
+        return Stmt.While(condition, Stmt.Block(stmts))
+    }
+
+    private fun ifStatement(): Stmt {
+        consume(TokenType.IF, "Dapat magsugod sa 'kung'")
+        consume(TokenType.ANG, "Dapat naay 'ang' before ang condition")
+        val condition = expression()
+        consume(TokenType.BUHATA, "Dapat naay 'buhata' after sa condition")
+        val body = mutableListOf<Stmt>()
+        while (!check(TokenType.ELSE) &&
+            !check(TokenType.TAPOS) &&
+            !isAtEnd()
+        ) {
+            body.add(statement())
+        }
+        var elseBranch: Stmt? = null
+        if (match(TokenType.ELSE)) {
+            elseBranch = elseStatement()
+        }
+        consume(TokenType.TAPOS, "Dapat naay 'tapos' para matapos ang if-block")
+        consume(TokenType.PERIOD, "Dapat naay period sa katapusan")
+        return Stmt.add(condition, Stmt.Block(body), elseBranch)
+    }
+
+    private fun elseStatement(): Stmt {
+        consume(TokenType.ELSE, "Dapat magsugod sa 'ugdi'")
+        val stmts = mutableListOf<Stmt>()
+        while (!check(TokenType.TAPOS) && !isAtEnd()) {
+            stmts.add(statement())
+        }
+        consume(TokenType.TAPOS, "Dapat naay 'tapos' para matapos ang block")
+        consume(TokenType.PERIOD, "Dapat naay period sa katapusan")
+        return Stmt.Block(stmts)
+    }
 
     private fun blockStatement(): Stmt.Block {
         consume(TokenType.SUGOD, "Dapat magsugod sa 'sugod'")

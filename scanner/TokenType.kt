@@ -18,7 +18,7 @@ enum class TokenType {
 
     // keywords / sentence words
     PAGHIMO, BAR, NGA,           // var declaration
-    USBA, ANG, HIMUAG,               // assignment
+    USBI, ANG, HIMUAG,               // assignment
     IPAKITA,                          // print
     KUNG, BUHATA,                     // if
     UGDI,                             // else

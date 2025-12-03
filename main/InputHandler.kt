@@ -16,7 +16,7 @@ class InputHandler {
             var blockDepth = 1
 
             while (blockDepth > 0) {
-                val prompt = "..".repeat(blockDepth) + " "
+                val prompt = "".repeat(blockDepth) + " "
                 print(prompt)
 
                 val line = readLine() ?: break
@@ -60,7 +60,7 @@ class InputHandler {
 
     private fun isBlockStart(input: String): Boolean {
         val clean = input.trim().lowercase()
-        return clean == "sugod" || clean == "sugod."
+        return clean.startsWith("sugod") || clean.startsWith("samtang") ||  clean.startsWith("kung")
     }
 
     private fun isBlockEnd(input: String): Boolean {

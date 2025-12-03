@@ -167,13 +167,13 @@ _While Statement_
 	Samtang ang ihap mas gamays tupongs 5 buhata,    
 		Ipakita ang "Numero: " plusig ihap.  
 
-		kung ang ihap parehas 3 buhata  
-			ipakita ang "   --> Naa na ta sa tunga!".  
-		ugdi  
-			ipakita ang "   Padayon...".  
+		Kung ang ihap parehas 3 buhata, 
+			Ipakita ang "   --> Naa na ta sa tunga!".  
+		Ugdi  
+			Ipakita ang "   Padayon...".  
 		tapos.  
 
-		usbi ang ihap dugangig 1.  
+		Usbi ang ihap dugangig 1.  
 	tapos.  
 	
 	Ipakita ang "Nahuman na ang pag-ihap!".   
