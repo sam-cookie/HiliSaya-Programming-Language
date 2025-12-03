@@ -157,8 +157,10 @@ _Creating variables_
 
 _Printing Strings/ Statements_  
 
-	Ipakita ang "Maayong Buntag, " sumpayig ngalan.    
-	Ipakita ang "Magsugod na ta og ihap:".   
+	Ipakita ang "Maayong Buntag, " sumpayig ngalan. 
+		Output: Maayong Buntag, Juan   
+	Ipakita ang "Magsugod na ta og: " sumpayig ihap. 
+		Output: Magsugod na ta og: 1  
 
 _While Statement_  
 
