@@ -32,7 +32,21 @@ class Evaluator(private var environment: Environment = Environment()) {
             is Stmt.Block -> executeBlock(stmt.statements, Environment(environment))
 
             is Stmt.Program -> executeProgram(stmt)
+
+            is Stmt.While -> {
+                while (isTruthy(evaluate(stmt.condition))) {
+                    executeBlock(stmt.statements, Environment(environment))
+                }
+            }
+
+            is Stmt.If -> {
+                if (isTruthy(evaluate(stmt.condition))) {
+                    executeBlock(stmt.statements, Environment(environment))
+                } else if (stmt.elseBranch != null) {
+                    executeBlock((stmt.elseBranch as Stmt.Block).statements, Environment(environment))
+                }
         }
+    }
     }
 
     private fun executeBlock(statements: List<Stmt>, blockEnv: Environment) {

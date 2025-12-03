@@ -64,9 +64,21 @@ class AstPrinter {
         is Stmt.ExprStmt -> indent + astToString(stmt.expression)
         is Stmt.Print -> indent + "gawas ${astToString(stmt.expression)}"
         is Stmt.Block -> {
-            "sugod\n" +
+            "Sugod\n" +
             stmt.statements.joinToString("\n") { stmtToString(it, indent + "    ") } +
-            "\n${indent}tapos"
+            "\n${indent}Tapos"
+        }
+         is Stmt.While -> { 
+        "Samtang ang ${astToString(stmt.condition)} buhata,\n" +
+        stmt.statements.joinToString("\n") { stmtToString(it, indent + "    ") } +
+        "\n${indent}tapos."
+        } 
+        is Stmt.If -> {
+            val blockStmt = stmt.statements.joinToString("\n") { stmtToString(it, indent + "    ") }
+            val elseBlockStmt = stmt.elseBranch?.let { 
+                "\nUgdi\n" + (it as Stmt.Block).statements.joinToString("\n") { stmtToString(it, indent + "    ") }
+            } ?: ""
+            "Kung ang ${astToString(stmt.condition)} buhata,\n$blockStmt$elseBlockStmt\n${indent}tapos."
         }
     }
 }
