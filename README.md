@@ -19,7 +19,8 @@ To create a new variable, use the _Paghimog_ keyword.
 * Syntax: Paghimog bar [name] nga [value].  
 * Example:  
   Paghimog bar edad nga 21.  
-  Paghimog bar ngalan nga "Juan".  
+  Paghimog bar ngalan nga "Juan". 
+
 **Re-assignment**  
 To update or change the value of an existing variable, use _Usbi_.  
 * Syntax: usbi ang [name] himuag [value].  
@@ -36,6 +37,7 @@ To print a value to the screen, use _Ipakita_.
 
 3. Arithmetic   
 HiliSaya uses descriptive words instead of symbols for basic math.  
+
 | Operation | Keyword | Example | Result |
 |---|---|---|---|
 | Addition | plusig | 5 plusig 5 | 10 |
@@ -55,7 +57,8 @@ Quickly update a variable's value.
 | bahinag | /= | Usbi ang x bahinag 2. |
 
 4. Comparisons 
-Used to compare two values. These return tinuod (true) or atik (false).    
+Used to compare two values. These return tinuod (true) or atik (false). 
+
 | Keyword | Keyword | Example |  
 |---|---|---|
 | > | mas dakos | Ipakita ang 10 mas dakos 5. |
@@ -107,16 +110,20 @@ tapos.
 	Example:  
 	42  
 	-2.1  
+
 *String Literals*  
 - Enclosed in double quotes (“ ”). Strings can contain letters, numbers, spaces, and symbols  
   Example: 
          “Hello, world!”  
+
 *Boolean Literals*  
 - Represent true values using local words  
   - tuod = true  
   - atik = false  
+
 *Null Literals*  
-- waay represents no value   
+- waay represents no value
+
 *Array Literals*   
 - Arrays are written using square brackets [] and the values inside it are separated by commas  
   Example:   
@@ -143,7 +150,7 @@ tapos.
 
 ## Example code:
 
-_Creating variables_
+_Creating variables_  
 Paghimog bar ngalan nga "Juan".  
 Paghimog bar ihap nga 1.  
 
@@ -152,6 +159,7 @@ Ipakita ang "Maayong Buntag, " sumpayig ngalan.
 ipakita ang "Magsugod na ta og ihap:".   
 
 _While Statement_  
+
 	Samtang ang ihap mas gamays tupongs 5 buhata,    
 		Ipakita ang "Numero: " plusig ihap.  
 
