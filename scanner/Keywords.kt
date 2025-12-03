@@ -3,26 +3,26 @@ package scanner
 val keywords = mapOf(
 
     // var declaration
-    "paghimog" to TokenType.PAGHIMO,
+    "Paghimog" to TokenType.PAGHIMO,
     // "ug" to TokenType.UG,
     "bar" to TokenType.VAR,
     "nga" to TokenType.NGA,
 
     // re assignment
-    "usbi" to TokenType.USBA,
+    "Usbi" to TokenType.USBA,
     "ang" to TokenType.ANG,
     "himuag" to TokenType.HIMUAG,
 
     //printing
-    "ipakita" to TokenType.PRINT,
+    "Ipakita" to TokenType.PRINT,
 
-    //if else
-    "kung" to TokenType.IF,
+    //if statement, do 
+    "Kung" to TokenType.IF,
     "buhata" to TokenType.BUHATA,
-    "ugdi" to TokenType.ELSE,    
+    "Ugdi" to TokenType.ELSE,    
 
     //while
-    "samtang" to TokenType.WHILE,
+    "Samtang" to TokenType.WHILE,
     
     //function
     "gamiton" to TokenType.GAMITON,
@@ -56,7 +56,7 @@ val keywords = mapOf(
     "dakos" to TokenType.DAKOS,
     "gamays" to TokenType.GAMAYS,
     "tupongs" to TokenType.TUPONG,
-    "or" to TokenType.OR,
+    // "or" to TokenType.OR,
 
     // ==, !=, =
     "mahimong" to TokenType.EQUALS,

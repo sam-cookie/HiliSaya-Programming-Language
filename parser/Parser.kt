@@ -26,7 +26,7 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun varDeclaration(): Stmt {
-        consume(TokenType.PAGHIMO, "Dapat magsugod sa 'paghimo'")
+        consume(TokenType.PAGHIMO, "Dapat magsugod sa 'paghimog'")
         // consume(TokenType.UG, "Dapat naay 'ug'") 
         consume(TokenType.VAR, "Dapat naay 'bar'")
         val name = consume(TokenType.IDENTIFIER, "Dapat naay variable name")
@@ -80,6 +80,15 @@ class Parser(private val tokens: List<Token>) {
         val expr = expression()
         consume(TokenType.PERIOD, "Dapat naay sa katapusan")
         return Stmt.Print(expr)
+    }
+
+    private fun whileStatement(): Stmt {
+        consume(TokenType.SAMTANG, "Dapat magsugod sa 'samtang'")
+        consume(TokenType.ANG, "Dapat naay 'ang' before ang condition")
+        val condition = expression()
+        consume(TokenType.BUHATA, "Dapat naay 'buhata' after sa condition")
+        val body = statement()
+        return Stmt.While(condition, body)
     }
 
     private fun blockStatement(): Stmt.Block {
@@ -165,7 +174,7 @@ class Parser(private val tokens: List<Token>) {
     
     private fun comparison(): Expr {
         var expr = stringConcat()
-        while (check(TokenType.MAS)) {
+        while (check(TokenType.MAS)) { // Ipakita ang x 
             val operator = parseMasOperator()
             val right = stringConcat()
             expr = Expr.Binary(expr, operator, right)
