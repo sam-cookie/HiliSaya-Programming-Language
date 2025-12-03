@@ -82,14 +82,14 @@ class Parser(private val tokens: List<Token>) {
         return Stmt.Print(expr)
     }
 
-    private fun whileStatement(): Stmt {
-        consume(TokenType.SAMTANG, "Dapat magsugod sa 'samtang'")
-        consume(TokenType.ANG, "Dapat naay 'ang' before ang condition")
-        val condition = expression()
-        consume(TokenType.BUHATA, "Dapat naay 'buhata' after sa condition")
-        val body = statement()
-        return Stmt.While(condition, body)
-    }
+    // private fun whileStatement(): Stmt {
+    //     consume(TokenType.SAMTANG, "Dapat magsugod sa 'samtang'")
+    //     consume(TokenType.ANG, "Dapat naay 'ang' before ang condition")
+    //     val condition = expression()
+    //     consume(TokenType.BUHATA, "Dapat naay 'buhata' after sa condition")
+    //     val body = statement()
+    //     return Stmt.While(condition, body)
+    // }
 
     private fun blockStatement(): Stmt.Block {
         consume(TokenType.SUGOD, "Dapat magsugod sa 'sugod'")
