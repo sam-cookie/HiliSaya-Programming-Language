@@ -33,9 +33,9 @@ class Evaluator(private var environment: Environment = Environment()) {
 
             is Stmt.Program -> executeProgram(stmt)
 
-            is Stmt.While -> {
-                while (isTruthy(evaluate(stmt.condition))) {
-                    executeBlock(stmt.statements, Environment(environment))
+           is Stmt.While -> {
+                while (evaluate(stmt.condition) as? Boolean == true) {
+                    executeBlock(stmt.statements, environment)
                 }
             }
 
@@ -45,8 +45,8 @@ class Evaluator(private var environment: Environment = Environment()) {
                 } else if (stmt.elseBranch != null) {
                     executeBlock((stmt.elseBranch as Stmt.Block).statements, Environment(environment))
                 }
+            }
         }
-    }
     }
 
     private fun executeBlock(statements: List<Stmt>, blockEnv: Environment) {
@@ -116,8 +116,15 @@ class Evaluator(private var environment: Environment = Environment()) {
             TokenType.LESS_THAN -> left.compareNumbers(right, expr.operator) { a, b -> a < b }
             TokenType.LESS_THAN_EQUAL -> left.compareNumbers(right, expr.operator) { a, b -> a <= b }
 
-            TokenType.EQUALTO -> left == right       // parehas
-            TokenType.NOT_EQUAL -> left != right     // dili parehas
+            TokenType.EQUALTO -> {
+                if (left is Number && right is Number) left.toDouble() == right.toDouble()
+                else left == right
+            }
+
+            TokenType.NOT_EQUAL -> {
+                if (left is Number && right is Number) left.toDouble() != right.toDouble()
+                else left != right
+            }
 
             TokenType.AND -> isTruthy(left) && isTruthy(right) // ug
             TokenType.OR -> isTruthy(left) || isTruthy(right)  // o

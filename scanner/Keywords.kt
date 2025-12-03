@@ -41,7 +41,7 @@ val keywords = mapOf(
     "plusig" to TokenType.PLUS,
     "minusig" to TokenType.MINUS,
     "timesig" to TokenType.TIMES,
-    "dibayig" to TokenType.DIVIDE,
+    "dividig" to TokenType.DIVIDE,
     // "nabilins" to TokenType.MODULO
 
     // assignment arithmetic

@@ -16,12 +16,11 @@ class Parser(private val tokens: List<Token>) {
 
     private fun statement(): Stmt {
         return when {
-            // Note: Make sure checkSequence uses TokenType.VAR if you removed UG from here
             checkSequence(TokenType.PAGHIMO, TokenType.VAR) -> varDeclaration()
             check(TokenType.USBI) -> assignmentStatement()
             check(TokenType.PRINT) -> printStatement()
             check(TokenType.SUGOD) -> blockStatement()
-            check(TokenType.SAMTANG) -> whileStatement()
+            check(TokenType.WHILE) -> whileStatement()
             check(TokenType.IF) -> ifStatement()
             check(TokenType.ELSE) -> elseStatement()
             else -> expressionStatement()
@@ -70,7 +69,7 @@ class Parser(private val tokens: List<Token>) {
             value = Expr.Binary(Expr.Variable(name), operator, divisor)
         } 
         else {
-            throw RuntimeError("Gipaabot ang 'himuag', 'dugangig', 'kuhaaig', 'piluag', o 'bahinag'.", peek().line)
+            throw RuntimeError("Mali nga assignment keyword ba" peek().line)
         }
 
         consume(TokenType.PERIOD, "Dapat period sa katapusan")
@@ -86,7 +85,7 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun whileStatement(): Stmt {
-        consume(TokenType.SAMTANG, "Dapat magsugod sa 'samtang'")
+        consume(TokenType.WHILE, "Dapat magsugod sa 'samtang'")
         consume(TokenType.ANG, "Dapat naay 'ang' before ang condition")
         val condition = expression()
         consume(TokenType.BUHATA, "Dapat naay 'buhata' after condition")
@@ -194,7 +193,8 @@ class Parser(private val tokens: List<Token>) {
             // "parehas" (==)
             if (match(TokenType.EQUALTO)) {
                 val operator = previous()
-                val right = comparison()
+                // parse only a single value for Boolean comparison
+                val right = stringConcat()
                 expr = Expr.Binary(expr, operator, right)
                 continue
             }
@@ -206,7 +206,8 @@ class Parser(private val tokens: List<Token>) {
                 
                 val operator = Token(TokenType.NOT_EQUAL, "dili parehas", null, startToken.line)
                 
-                val right = comparison()
+                // parse only a single value, not full arithmetic expression
+                val right = stringConcat()
                 expr = Expr.Binary(expr, operator, right)
                 continue
             }
@@ -215,6 +216,7 @@ class Parser(private val tokens: List<Token>) {
         }
         return expr
     }
+
     
     private fun comparison(): Expr {
         var expr = stringConcat()
