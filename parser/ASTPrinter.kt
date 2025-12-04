@@ -99,5 +99,7 @@ class AstPrinter {
             val args = stmt.arguments.joinToString(", ") { astToString(it) }
             indent + "${stmt.name.lexeme}($args)"
         }
+
+        is Stmt.Return -> indent + "Balika ${stmt.value?.let { astToString(it) } ?: ""}"
     }
 }
