@@ -25,8 +25,10 @@ val keywords = mapOf(
     "Samtang" to TokenType.WHILE,
     
     //function
-    "gamiton" to TokenType.GAMITON,
+    "Buhatag" to TokenType.FUNCTION,
     "balik" to TokenType.RETURN,
+    "Tawagi" to TokenType.CALL,
+    "kay" to TokenType.KAY,
 
     "undangi" to TokenType.BREAK,
     "padayoni" to TokenType.CONTINUE,
@@ -41,7 +43,7 @@ val keywords = mapOf(
     "plusig" to TokenType.PLUS,
     "minusig" to TokenType.MINUS,
     "timesig" to TokenType.TIMES,
-    "dibayig" to TokenType.DIVIDE,
+    "dividig" to TokenType.DIVIDE,
     // "nabilins" to TokenType.MODULO
 
     // assignment arithmetic

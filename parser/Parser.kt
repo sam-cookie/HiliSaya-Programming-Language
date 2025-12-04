@@ -16,12 +16,12 @@ class Parser(private val tokens: List<Token>) {
 
     private fun statement(): Stmt {
         return when {
-            // Note: Make sure checkSequence uses TokenType.VAR if you removed UG from here
+            check(TokenType.FUNCTION) -> funDeclaration()
             checkSequence(TokenType.PAGHIMO, TokenType.VAR) -> varDeclaration()
             check(TokenType.USBI) -> assignmentStatement()
             check(TokenType.PRINT) -> printStatement()
             check(TokenType.SUGOD) -> blockStatement()
-            check(TokenType.SAMTANG) -> whileStatement()
+            check(TokenType.WHILE) -> whileStatement()
             check(TokenType.IF) -> ifStatement()
             check(TokenType.ELSE) -> {
                 consume(TokenType.IF, "Dapat naay 'kung' bago ang ugdi") 
@@ -72,7 +72,7 @@ class Parser(private val tokens: List<Token>) {
             value = Expr.Binary(Expr.Variable(name), operator, divisor)
         } 
         else {
-            throw RuntimeError("Gipaabot ang 'himuag', 'dugangig', 'kuhaaig', 'piluag', o 'bahinag'.", peek().line)
+            throw RuntimeError("Mali nga assignment keyword ang gamit nimo bai: dugangig, kuhaag, piluag, bahinig", peek().line)
         }
 
         consume(TokenType.PERIOD, "Dapat period sa katapusan")
@@ -101,6 +101,57 @@ class Parser(private val tokens: List<Token>) {
         consume(TokenType.PERIOD, "Dapat 'tapos.' ang ending")
         return Stmt.While(condition, stmts)
     }
+
+    private fun funDeclaration(): Stmt.Fun {
+        consume(TokenType.FUNCTION, "Dapat magsugod sa 'Buhatag'")
+        val name = consume(TokenType.IDENTIFIER, "Dapat naay function name")
+        consume(TokenType.ANG, "Expected 'ang' after function name.")
+        // require opening parenthesis
+        consume(TokenType.LEFT_PAREN, "Dapat naay '(' after function name")
+
+        val params = mutableListOf<Token>()
+        if (!check(TokenType.RIGHT_PAREN)) { // parameters exist
+            do {
+                params.add(consume(TokenType.IDENTIFIER, "Dapat naay parameter name"))
+            } while (match(TokenType.COMMA))
+        }
+
+        consume(TokenType.RIGHT_PAREN, "Dapat naay ')' after parameters")
+        consume(TokenType.COMMA, "Dapat naay ',' before function body")
+
+        val body = functionBlockStatement()
+        return Stmt.Fun(name, params, body)
+    }
+
+    private fun functionBlockStatement(): Stmt.Block {
+        val stmts = mutableListOf<Stmt>()
+
+        // read until Tapos or Tapos.
+        while (!check(TokenType.TAPOS) && !isAtEnd()) {
+            stmts.add(statement())
+        }
+
+        consume(TokenType.TAPOS, "Dapat naay 'tapos' para matapos ang function block")
+        consume(TokenType.PERIOD, "Dapat 'tapos.' ang katapusan")
+
+        return Stmt.Block(stmts)
+    }
+
+    private fun callStatement(): Stmt.Call {
+        consume(TokenType.CALL, "Dapat magsugod sa 'Tawagi'")
+        consume(TokenType.ANG, "Expected 'ang' after 'Tawagi'")
+        val functionName = consume(TokenType.IDENTIFIER, "Dapat naay function name")
+        consume(TokenType.KAY, "Expected 'kay' before arguments")
+
+        val args = mutableListOf<Expr>()
+        do {
+            args.add(expression())
+        } while (match(TokenType.COMMA)) // support multiple arguments
+
+        consume(TokenType.PERIOD, "Dapat naay period sa katapusan")
+        return Stmt.Call(functionName, args)
+    }
+
 
     private fun ifStatement(): Stmt {
         consume(TokenType.IF, "Dapat magsugod sa 'kung'")
@@ -144,6 +195,9 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun expressionStatement(): Stmt {
+        if (check(TokenType.CALL)) { // CALL = "Tawagi"
+            return callStatement()
+        }
         val expr = expression()
         consume(TokenType.PERIOD, "Dapat naay period sa katapusan")
         return Stmt.ExprStmt(expr)
@@ -191,7 +245,8 @@ class Parser(private val tokens: List<Token>) {
             // "parehas" (==)
             if (match(TokenType.EQUALTO)) {
                 val operator = previous()
-                val right = comparison()
+                // parse only a single value for Boolean comparison
+                val right = stringConcat()
                 expr = Expr.Binary(expr, operator, right)
                 continue
             }
@@ -203,7 +258,8 @@ class Parser(private val tokens: List<Token>) {
                 
                 val operator = Token(TokenType.NOT_EQUAL, "dili parehas", null, startToken.line)
                 
-                val right = comparison()
+                // parse only a single value, not full arithmetic expression
+                val right = stringConcat()
                 expr = Expr.Binary(expr, operator, right)
                 continue
             }
@@ -212,6 +268,7 @@ class Parser(private val tokens: List<Token>) {
         }
         return expr
     }
+
     
     private fun comparison(): Expr {
         var expr = stringConcat()
@@ -281,18 +338,30 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun primary(): Expr {
-        if (match(TokenType.STRING)) {
-            return Expr.Literal(previous().literal!!) 
-        }
+        // literal values
+        if (match(TokenType.STRING)) return Expr.Literal(previous().literal!!)
+        if (match(TokenType.NUMBER, TokenType.TRUE, TokenType.FALSE, TokenType.NULL)) return Expr.Literal(previous().literal!!)
 
-        if (match(TokenType.NUMBER, TokenType.TRUE, TokenType.FALSE, TokenType.NULL)) {
-            return Expr.Literal(previous().literal!!)
-        }
-
+        // variable or function call
         if (match(TokenType.IDENTIFIER)) {
-            return Expr.Variable(previous()) 
+            var expr: Expr = Expr.Variable(previous())
+
+            // function call
+            while (match(TokenType.LEFT_PAREN)) {
+                val args = mutableListOf<Expr>()
+                if (!check(TokenType.RIGHT_PAREN)) {
+                    do {
+                        args.add(expression())
+                    } while (match(TokenType.COMMA))
+                }
+                val paren = consume(TokenType.RIGHT_PAREN, "Dapat naay ')' after function arguments")
+                expr = Expr.Call(expr, paren, args)
+            }
+
+            return expr
         }
 
+        // grouping
         if (match(TokenType.LEFT_PAREN)) {
             val expr = expression()
             consume(TokenType.RIGHT_PAREN, "Dili balanced ang parentheses.")
