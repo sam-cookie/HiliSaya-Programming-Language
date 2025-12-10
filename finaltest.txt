@@ -1,0 +1,52 @@
+// functions
+Buhatag greetings ang (pangalan),
+	Ipakita ang "Maayong buntag, " sumpayig pangalan.
+Tapos.
+
+Tawagi ang greetings kay "Sir Ren".
+
+
+Ipakita ang "makeCounter:".
+Buhatag makeCounter ang (),
+    Paghimog bar count nga 0.
+    Buhatag increment ang (),
+        Usbi ang count dugangig 1.
+        Ibalik ang count.
+    Tapos.
+    Ibalik ang increment.
+Tapos.
+
+Paghimog bar counter nga makeCounter().
+Ipakita ang counter().  // prints 1
+Ipakita ang counter().  // prints 2
+Ipakita ang counter().  // prints 3
+
+Ipakita ang "adding two numbers:".
+Buhatag add ang (x, y),
+	Ibalik ang x plusig y.
+Tapos.
+
+Paghimog bar result nga add kay 3, 5.
+Ipakita ang result.
+
+// testing recursion
+Ipakita ang "Fibonacci: ".
+Buhatag fibonacci ang (n), 
+	Kung ang n mas gamays 3 buhata, 
+	    //Ipakita ang 1.
+	    Ibalik ang 1.
+	Tapos.
+	Ibalik ang fibonacci(n minusig 1) plusig fibonacci(n minusig 2). 
+Tapos.
+
+Paghimog bar recursion nga fibonacci kay 10.
+Ipakita ang recursion.
+
+//Native Functions
+
+Buhatag greetings ang (pangalan),
+	Ipakita ang "Ang oras ug petsa karon, " sumpayig pangalan sumpayig ", kay " sumpayig orasKaron() sumpayig " ug " sumpayig petsaKaron().
+    // Ipakita ang "Ang oras karon kay: " sumpayig orasKaron().
+Tapos.
+
+Tawagi ang greetings kay "Sir Ren".

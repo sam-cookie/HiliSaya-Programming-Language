@@ -1,12 +1,11 @@
-while loop
-Paghimog bar x nga 5.
+//Paghimog bar x nga 5.
 Samtang ang x mas gamays 10 buhata,
 Ipakita ang x.
 Usbi ang x dugangig 1.
-Tapos.+
+Tapos.
 
 
-for loop 
+// for loop 
 Paghimog bar x nga 5.
 Para ang x, habang x mas gamays 7, Usbi ang x dugangig 1.
 Ipakita ang "Happy Birthday".
@@ -40,16 +39,17 @@ Ipakita ang "adding two numbers:".
 Tapos.
 
 Paghimog bar result nga add kay 3, 5.
-// Paghimog bar result2 nga add kay 3, 5, 3.
 Ipakita ang result.
+
+// Paghimog bar result2 nga add kay 3, 5, 3.
 // Ipakita ang result2.
 
 Ipakita ang "Recursion Fibonacci: ".
 
 Buhatag fibonacci ang (n), 
-	Kung ang n mas gamays 3 buhata, // our language is 1-based fibonacci
-	//Ipakita ang 1.
-	Ibalik ang 1.
+	Kung ang n mas gamays 3 buhata, 
+	    /Ipakita ang 1.
+	    Ibalik ang 1.
 	Tapos.
 	Ibalik ang fibonacci(n minusig 1) plusig fibonacci(n minusig 2). 
 Tapos.
@@ -69,8 +69,8 @@ Paghimog bar facresult nga factorial kay 5.
 Ipakita ang facresult.
 
 //Native Functions
-Ipakita ang orasSubong().
-Ipakita ang petsaSubong().
+Ipakita ang orasKaron().
+Ipakita ang petsaKaron().
 
 // if else 
 Paghimog bar temperature nga 30.

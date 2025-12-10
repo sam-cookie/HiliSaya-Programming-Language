@@ -9,8 +9,8 @@ class Evaluator(private var environment: Environment = Environment()) {
 
     init {
         // register native function
-        environment.define("orasSubong", TimeFunc())
-        environment.define("petsaSubong", DateFunc())
+        environment.define("orasKaron", TimeFunc())
+        environment.define("petsaKaron", DateFunc())
         environment.define("katason", KatasonFunc())
         environment.define("letter", LetterFunc())
     }
