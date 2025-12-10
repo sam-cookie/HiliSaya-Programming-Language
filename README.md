@@ -81,24 +81,27 @@ Used to combine multiple conditions.
   (Reverses the value)
 
 
-If / Else (Kung / Ugdi)
-Syntax:
-Kung ang [condition] buhata
-	[code to run if true]
-ugdi
-	[code to run if false]
-tapos.
+6. Control Statements
+* If / Else (Kung / Ugdi)
+
 Example:
-kung marka mas dakos tupongs 75 buhata
-	ipakita ang "Pasar ka!".
-ugdi
-	ipakita ang "Hagbong.".
-tapos.
-While Loop (Samtang)
-Syntax:
-Samtang ang  [condition] buhata
-	[code to loop]
-tapos.
+
+_Syntax:_
+
+    Kung ang [condition] buhata,
+	    [code to run if true]
+    Ugdi
+	    [code to run if false]
+    Tapos.
+    Tapos.
+
+* While Loop (Samtang)
+
+_Syntax:_
+
+	Samtang ang  [condition] buhata,
+		[code to loop]
+	Tapos.
 
 7. Data Types  
 * Boolean: tinuod (true), atik (false)  
@@ -124,11 +127,6 @@ tapos.
 *Null Literals*  
 - waay represents no value
 
-*Array Literals*   
-- Arrays are written using square brackets [] and the values inside it are separated by commas  
-  Example:   
-		[1, 2, 3, 4]  
-
 ### Identifiers
 *Rules for Valid Identifiers*
 - Identifiers (variable names, function names, etc) must only begin with either a lowercase(a-z) or uppercase letter(A-Z). It can contain numbers or underscores.
@@ -139,7 +137,7 @@ tapos.
 ### Comments
 - Line and block comments are supported
 - Syntax for line comments : // comment 
-- Syntax for block comments: /// comment ///
+- Syntax for block comments: /* comment */
 
 ### Syntax Style
 - The way the code is structured is like how you would hear a Bisaya person talk
@@ -176,8 +174,7 @@ _While Statement_
 		Usbi ang ihap dugangig 1.  
 	tapos.  
 	
-	Ipakita ang "Nahuman na ang pag-ihap!".   
-
+	Ipakita ang "Nahuman na ang pag-ihap!".  
 
 ### Design Rationale
 *Familiar vocabulary:* using local-language keywords (like gawas and balik) reduces difficulty from understanding and helps target users learn it faster  
